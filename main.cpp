@@ -25,6 +25,7 @@ bool Branje_Stevil(vector<unsigned char>& vec, const char filename[]) {
     return true;
 }
 
+void Izpis_Stevil(const vector<unsigned char>& vec);
 void BinarniRadixSort(vector<unsigned char>& A);
 
 int main(int argc, const char* argv[]) {
@@ -39,6 +40,7 @@ int main(int argc, const char* argv[]) {
     }
 
     BinarniRadixSort(A);
+    Izpis_Stevil(A);
 
     return 0;
 }
