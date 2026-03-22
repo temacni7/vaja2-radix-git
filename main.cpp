@@ -58,5 +58,15 @@ void BinarniRadixSort(vector<unsigned char>& A) {
             int bit = (A[i] >> k) & 1;
             C[bit]++;
         }
+
+        C[1] += C[0];
+
+        for (int i = static_cast<int>(n) - 1; i >= 0; i--) {
+            int bit = (A[i] >> k) & 1;
+            B[C[bit] - 1] = A[i];
+            C[bit]--;
+        }
+
+        A = B;
     }
 }
