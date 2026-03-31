@@ -29,6 +29,7 @@ void Izpis_Stevil(const vector<unsigned char>& vec);
 void BinarniRadixSort(vector<unsigned char>& A);
 
 int main(int argc, const char* argv[]) {
+    int x = 5;
     vector<unsigned char> A;
 
     if (argc != 2) {
