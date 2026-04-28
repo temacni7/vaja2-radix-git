@@ -1,0 +1,76 @@
+# Prva skripta - testiranje kode
+# Sproži se ob vsakem pushu na main vejo
+name: 29909_test
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # ============================================================
+  # JOB 1: Preveri ali testne skripte obstajajo v repozitoriju
+  # ============================================================
+  preveri-teste:
+    runs-on: self-hosted
+    steps:
+      - name: Kloniramo repozitorij
+        uses: actions/checkout@v4
+
+      - name: Preverimo ali testna datoteka obstaja
+        run: |
+          # Preverimo ali test_radix.cpp obstaja, napako preusmerimo v napaka.txt
+          ls test_radix.cpp 2>napaka.txt
+          echo "Testna datoteka najdena"
+
+      - name: Nalozimo napaka.txt kot artefakt
+        uses: actions/upload-artifact@v4
+        with:
+          name: napaka
+          path: napaka.txt
+        # Artefakt naložimo vedno, tudi če je prišlo do napake
+        if: always()
+
+  # ============================================================
+  # JOB 2: Pripravi okolje in poženi teste
+  # Odvisen od job 1 - če job 1 ne uspe, se ta ne izvede
+  # ============================================================
+  pozeni-teste:
+    runs-on: self-hosted
+    needs: preveri-teste
+    # Matrica - teste poženemo na več verzijah g++
+    strategy:
+      matrix:
+        compiler: [g++-12, g++-13]
+
+    steps:
+      - name: Kloniramo repozitorij
+        uses: actions/checkout@v4
+
+      - name: Prenesemo artefakt napaka.txt iz prvega joba
+        uses: actions/download-artifact@v4
+        with:
+          name: napaka
+
+      - name: Preverimo vsebino napaka.txt
+        run: |
+          # Če napaka.txt ni prazen, prekinemo izvajanje
+          if [ -s napaka.txt ]; then
+            echo "Napaka iz prvega joba:"
+            cat napaka.txt
+            exit 1
+          fi
+          echo "napaka.txt je prazen, nadaljujemo"
+
+      - name: Namestimo prevajalnik ${{ matrix.compiler }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.compiler }}
+
+      - name: Prevedemo testno datoteko z ${{ matrix.compiler }}
+        run: |
+          ${{ matrix.compiler }} -o test_radix test_radix.cpp radix.cpp
+
+      - name: Pozenemo teste
+        run: |
+          ./test_radix
